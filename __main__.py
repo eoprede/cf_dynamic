@@ -61,6 +61,35 @@ def establish_cf_connection(email, API_key, zone_name):
 
     return cf, zone_id
 
+def get_ips_from_fw(fw, un, pw, interface, check_ipv4, check_ipv6):
+    data = []
+    ipv4 = None
+    ipv6 = None
+    try:
+        t = fw_api_test.fortigate_api(fw, un, pw)
+        port1 = t.show(['cmdb', 'system', 'interface', interface])
+        if check_ipv4:
+            ipv4 = port1['results'][0].get('ip', None)
+        if check_ipv6:
+            ipv6 = port1['results'][0]['ipv6'].get('ip6-address', None)
+        ips = []
+        (ips.append(ipv4) if ipv4 is not None else None)
+        (ips.append(ipv6) if ipv6 is not None else None)
+        for ip_data in ips:
+            try:
+                ip_addr = ipaddress.ip_interface(newstr(ip_data.replace(' ','/')))
+                if ip_addr.version == 6:
+                    data.append({"ip":str(ip_addr.ip),"type":'AAAA'})
+                elif ip_addr.version == 4:
+                    data.append({"ip":str(ip_addr.ip),"type":'A'})
+            except ValueError:
+                print ('Can not process IP value of {}'.format(ip_data))
+    except:
+        print ('Something went wrong')
+        raise    
+
+    return data
+
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--un', action='store', dest='un', 
@@ -82,11 +111,13 @@ parser.add_argument('--hosts', nargs='+', dest='hosts',required=True,
 parser.add_argument('--ipv4', dest='ipv4', action='store_true', help='Only do IPv4 reconds')
 parser.add_argument('--ipv6', dest='ipv6', action='store_true', help='Only do IPv6 records')
 parser.add_argument('--noproxy', dest='proxy', action='store_false', help='Do not use CF proxy for the update')
+parser.add_argument('--fwint', dest='fwint', action='store', default=None, help='Use IPs from this FW interface instead of host\'s IPs')
 
 args = parser.parse_args()
 
 check_ipv6 = True
 check_ipv4 = True
+fw = args.fw
 
 if args.ipv4:
     check_ipv6=False
@@ -96,8 +127,14 @@ if args.ipv6:
 now = datetime.datetime.now()
 print (now)
 
-print ('Figuring out public IP')
-ip_data = figure_out_public_ip(check_ipv4, check_ipv6)
+if args.fwint:
+    print ('Getting IPs from FW int {}'.format(args.fwint))
+    ip_data = get_ips_from_fw(fw, args.un, args.pw, args.fwint, check_ipv4, check_ipv6)
+    fw = None
+
+else:
+    print ('Figuring out public IP')
+    ip_data = figure_out_public_ip(check_ipv4, check_ipv6)
 
 print ('Working with cloudflare')
 cf, zone_id = establish_cf_connection(args.email, args.token, args.zone)
@@ -105,12 +142,12 @@ for dns_name in args.hosts:
     for ip in ip_data:
             do_dns_update(cf, args.zone, zone_id, "{}.{}".format(dns_name, args.zone), ip['ip'], ip['type'], args.proxy)
 
-if args.fw:
+if fw:
     print ('Updating FW records')
     for ip in ip_data:
         if ip['type'] == 'AAAA':
             try:
-                t = fw_api_test.fortigate_api(args.fw, args.un, args.pw)
+                t = fw_api_test.fortigate_api(fw, args.un, args.pw)
                 addr = t.show(['cmdb', 'firewall', 'address6', args.rule])
                 g_ip = addr['results'][0]['ip6']
                 if g_ip == ip['ip']+'/128':
