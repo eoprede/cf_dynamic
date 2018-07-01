@@ -4,7 +4,8 @@ This script will automatically determine public IPv4 and IPv6 addresses of the s
 ## Use case
 I have an internet connection at home that support IPv6, which means that I can have nearly unlimited public IPs to serve some content.
 However, these IPv6 addresses can change dynamically at ISPs mercy, thus I need some methods for keeping them up to date. Traditional ddns solutions don't really work because they don't support IPv6. On top of that, I have discovered that Linux hosts upon change of IPv6 address, hold on to their old addresses as well. So asking the system for its IPv6 address is not reliable and instead I have to use some external service like ip4.me and ip6.me
-Once the IPv6 address is updated, I need to be able to adjust firewall settings to allow the traffic to the new host. 
+Once the IPv6 address is updated, I need to be able to adjust firewall settings to allow the traffic to the new host.
+You can also pull external interface of the FW to get the IPs and update CloudFlare with those IPs. 
 
 ## Manual
 Just run this script on the host that has connection and optionally to the fortigate firewall.
@@ -23,4 +24,5 @@ Variables:
 --ipv6 Only update IPv6 addresses (default - update both)
 --ipv4 Only update IPv4 addresses (default - update both)
 --noproxy Do not proxy connections to this host via Cloudflare (basically use CF as DNS provider only). Default - use proxy
+--fwint Instead of figuring out public IP of the host, query Firewall for the IPs of the given port name.
 ```
