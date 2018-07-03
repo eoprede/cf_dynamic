@@ -14,26 +14,28 @@ def figure_out_public_ip(check_ipv4, check_ipv6):
     ipv4 = None
     data = []
     
-    ipv4_address = re.compile('(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])')
+    ipv4_address = re.compile('(((25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)\.){3}(25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d))')
     ipv6_address = re.compile('(?:(?:[0-9A-Fa-f]{1,4}:){6}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|::(?:[0-9A-Fa-f]{1,4}:){5}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,4}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))|(?:(?:[0-9A-Fa-f]{1,4}:){,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){,6}[0-9A-Fa-f]{1,4})?::)')
 
     if check_ipv6:
-        ip_response = requests.get('http://ip6.me')
-        if "200" in str(ip_response):
-            ip_data = ipv6_address.search(str(ip_response.content)).group()
-            ip_addr = ipaddress.ip_address(newstr(ip_data))
-            if ip_addr.version == 6:
-                data.append({"ip":ip_data,"type":'AAAA'})
-        else:
+        try:
+            ip_response = requests.get('http://ipv6.whatismyv6.com')
+            if "200" in str(ip_response):
+                ip_data = ipv6_address.search(newstr(ip_response.content)).group()
+                ip_addr = ipaddress.ip_address(newstr(ip_data))
+                if ip_addr.version == 6:
+                    data.append({"ip":ip_data,"type":'AAAA'})
+        except:
             print ('Could not get external IPv6 address')
     if check_ipv4:
-        ip_response = requests.get('http://ip4.me')
-        if "200" in str(ip_response):
-            ip_data = ipv4_address.search(str(ip_response.content)).group()
-            ip_addr = ipaddress.ip_address(newstr(ip_data))
-            if ip_addr.version == 4:
-                data.append({"ip":ip_data,"type":'A'})
-        else:
+        try:
+            ip_response = requests.get('http://ipv4.whatismyv6.com')
+            if "200" in str(ip_response):
+                ip_data = ipv4_address.search(newstr(ip_response.content)).group()
+                ip_addr = ipaddress.ip_address(newstr(ip_data))
+                if ip_addr.version == 4:
+                    data.append({"ip":ip_data,"type":'A'})
+        except:
             print ('Could not get external IPv4 address')
 
     return data     
