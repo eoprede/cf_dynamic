@@ -7,6 +7,13 @@ However, these IPv6 addresses can change dynamically at ISPs mercy, thus I need 
 Once the IPv6 address is updated, I need to be able to adjust firewall settings to allow the traffic to the new host.
 You can also pull external interface of the FW to get the IPs and update CloudFlare with those IPs. 
 
+##For Windows Users
+Run PowerShell as Admin.
+Edit cf_dynamic command from the instruction in the next section.
+Run windows_requirements_and_update.ps1
+
+This version will install all the requirement for this script in Windows.
+
 ## Manual
 Just run this script on the host that has connection and optionally to the fortigate firewall.
     Example script run:
