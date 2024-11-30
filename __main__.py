@@ -40,7 +40,7 @@ def figure_out_public_ip(check_ipv4, check_ipv6):
 
     return data     
 
-def establish_cf_connection(email, API_key, zone_name):
+def establish_cf_connection("email", API_key, zone_name):
     cf = CloudFlare.CloudFlare(token=API_key)
 
     try:
