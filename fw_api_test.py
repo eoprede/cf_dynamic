@@ -24,14 +24,14 @@ class fortigate_api:
         auth = requests.post(http+self.ip+'/logincheck', data=unpw, verify=self.verify, proxies=self.proxies)
         self.cookies = auth.cookies
         for cookie in self.cookies:
-            if cookie.name == "ccsrftoken":
+            if "ccsrftoken" in cookie.name:
                 csrftoken = cookie.value[1:-1]  # token stored as a list
                 self.header = {"X-CSRFTOKEN": csrftoken}
 
     def __enter__(self):
         return self
 
-    def __del__(self):
+    def logout(self):
         if self._secure:
             http='https://'
         else:
