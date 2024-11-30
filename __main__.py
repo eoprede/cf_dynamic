@@ -41,7 +41,7 @@ def figure_out_public_ip(check_ipv4, check_ipv6):
     return data     
 
 def establish_cf_connection(email, API_key, zone_name):
-    cf = CloudFlare.CloudFlare(email=email,token=API_key)
+    cf = CloudFlare.CloudFlare(token=API_key)
 
     try:
         params = {'name':zone_name}
@@ -104,8 +104,8 @@ parser.add_argument('--rule', action='store', dest='rule',
                     help='Rule object name in FW')
 parser.add_argument('--token', action='store', dest='token',required=True,
                     help='CF token')
-parser.add_argument('--email', action='store', dest='email',required=True,
-                    help='CF email')
+#parser.add_argument('--email', action='store', dest='email',required=True,
+#                    help='CF email')
 parser.add_argument('--zone', action='store', dest='zone',required=True,
                     help='CF DNS zone')
 parser.add_argument('--hosts', nargs='+', dest='hosts',required=True,
@@ -145,7 +145,7 @@ for dns_name in args.hosts:
             do_dns_update(cf, args.zone, zone_id, "{}.{}".format(dns_name, args.zone), ip['ip'], ip['type'], args.proxy)
 
 if fw:
-    print ('Updating FW records')
+  print ('Updating FW records')
     for ip in ip_data:
         if ip['type'] == 'AAAA':
             try:
@@ -161,3 +161,5 @@ if fw:
             except:
                 print ('something went wrong')
                 raise
+t.logout()
+
